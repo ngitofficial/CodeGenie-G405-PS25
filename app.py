@@ -21,7 +21,6 @@ chat_table = db.table("chats")
 
 class ChatSource(Resource):
     def generate_code(self, prompt, chat_id):
-        print("Generating code with prompt:", prompt)
         Chat = Query()
         current = db.get(Chat.chat_id == chat_id)
         model_prompt = ""
@@ -42,7 +41,6 @@ class ChatSource(Resource):
 
     def put(self,chat_id):
         data = request.get_json()
-        print("Received data:", data)
         message = self.generate_code(data['prompt'], chat_id)
         current_date = datetime.now().date()
         result_json = {"chat_id": chat_id, "date": current_date, "title": data['prompt'], "messages": message}
