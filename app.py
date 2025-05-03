@@ -57,5 +57,25 @@ class ChatSource(Resource):
 
 api.add_resource(ChatSource, "/chatsource/<int:chat_id>")
 
+class ListAllChats(Resource):
+    def get(self):
+        all_chats = db.all()
+        if all_chats:
+            return jsonify(all_chats)
+        return jsonify({"error": "No chats found."}), 404
+
+api.add_resource(ListAllChats, "/list-all-chats")
+
+class GetConversationHistory(Resource):
+    def get(self, chat_id):
+        chat = Query()
+        conversation = db.get(chat.chat_id == chat_id)
+        if conversation:
+            return jsonify(conversation["messages"])
+        return jsonify({"error": f"CHAT ID '{chat_id}' not found."}), 404
+
+api.add_resource(GetConversationHistory, '/conversation-history/<int:chat_id>')
+
+
 if __name__ == "__main__":
     app.run(debug=True)
