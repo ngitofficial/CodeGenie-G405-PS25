@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 class CodeGenieSidebarProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'codeGenieChat'; // Must match package.json view id exactly
+  public static readonly viewType = 'codeGenieChat';
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
@@ -19,7 +19,6 @@ class CodeGenieSidebarProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtml(webviewView.webview);
 
-    // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(async message => {
       switch (message.type) {
         case 'sendPrompt':
@@ -65,7 +64,6 @@ class CodeGenieSidebarProvider implements vscode.WebviewViewProvider {
 export function activate(context: vscode.ExtensionContext) {
   console.log('Code Genie extension activated!');
 
-  // Register the sidebar webview provider
   const sidebarProvider = new CodeGenieSidebarProvider(context);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -74,7 +72,6 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  // Command to open the sidebar view
   const disposable = vscode.commands.registerCommand('code-genie.openChat', () => {
     console.log('code-genie.openChat command executed');
     vscode.commands.executeCommand('workbench.view.extension.codeGenieContainer');
