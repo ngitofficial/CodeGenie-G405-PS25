@@ -31,16 +31,16 @@ class ChatSource(Resource):
         inputs = tokenizer(model_prompt, return_tensors="pt").to(model.device)
         outputs = model.generate(**inputs, max_new_tokens=250)
         output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        output = output.split("<|assistant|>")[-1].strip()   #another way of removing prompt
+        output = output.split("<|assistant|>")[-1].strip()
         chat = {"user": prompt,
                 "assistant": output}
-        message = [chat]   #dumps was converting json to string
+        message = [chat]
         return message
 
     def put(self,chat_id):
         data = request.get_json()
         message = self.generate_code(data['prompt'], chat_id)
-        current_date = datetime.now().date()   #not serializable so converted to string
+        current_date = datetime.now().date()
         result_json = {"chat_id": chat_id, "date": str(current_date), "title": data['prompt'], "messages": message}
         chat_table.insert(result_json)
         return jsonify(chat_table.get(Chat.chat_id == chat_id))
@@ -58,7 +58,7 @@ class ChatSource(Resource):
             if current:  
                 current_date = datetime.now().date()
                 chat_table.update({"date": str(current_date)}, Chat.chat_id == chat_id)
-                updated_messages = current["messages"] + new_message  #new_message is already list so [new_message] becomes of list of list
+                updated_messages = current["messages"] + new_message
                 chat_table.update({"messages": updated_messages}, Chat.chat_id == chat_id)
                 return jsonify(chat_table.get(Chat.chat_id == chat_id))
             else:
