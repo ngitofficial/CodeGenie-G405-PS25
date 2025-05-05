@@ -30,10 +30,10 @@ class ChatSource(Resource):
         model_prompt += f"<|user|>\n{prompt}\n<|assistant|>\n"
         inputs = tokenizer(model_prompt, return_tensors="pt").to(model.device)
         outputs = model.generate(**inputs, max_new_tokens=250)
-        output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        output = output.split("<|assistant|>")[-1].strip()
+        assistant_reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        assistant_reply = assistant_reply.split("<|assistant|>")[-1].strip()
         chat = {"user": prompt,
-                "assistant": output}
+                "assistant": assistant_reply}
         message = [chat]
         return message
 
