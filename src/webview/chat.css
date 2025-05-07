@@ -1,0 +1,71 @@
+/* .chat-container {
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  border-bottom: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 10px;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+}
+
+#sendButton {
+  padding: 8px 12px;
+  margin-left: 5px;
+  font-size: 14px;
+} */
+
+.chat-container {
+  padding: 12px;
+  max-height: calc(100vh - 120px);  /* Responsive height */
+  overflow-y: auto;
+  border-bottom: 1px solid var(--vscode-widget-shadow);
+  background: var(--vscode-editor-background);
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 12px;
+  gap: 8px;  /* Modern spacing between elements */
+  background: var(--vscode-editor-background);
+  border-top: 1px solid var(--vscode-widget-shadow);
+  position: sticky;
+  bottom: 0;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border-radius: 4px;
+}
+
+#chatInput:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  border-color: var(--vscode-focusBorder);
+}
+
+#sendButton {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#sendButton:hover {
+  background: var(--vscode-button-hoverBackground);
+}
