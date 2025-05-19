@@ -10,25 +10,16 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:code-genie.openChat"
+    "onCommand:code-genie.openchat"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "code-genie.openChat",
-        "title": "HelloGenie",
-        "icon":"resources/icon.png"
+        "command": "code-genie.openchat",
+        "title": "Code Genie Chat"
       }
-    ],
-    "menus": {
-      "editor/title": [
-        {
-          "command": "code-genie.openChat",
-          "group": "navigation"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

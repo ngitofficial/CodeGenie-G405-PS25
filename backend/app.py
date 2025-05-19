@@ -3,8 +3,10 @@ from flask_restful import Api, Resource
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from tinydb import TinyDB, Query
 from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 model_path = "deepseek-coder-1.3b-instruct"
 
@@ -32,22 +34,33 @@ class ChatSource(Resource):
         outputs = model.generate(**inputs, max_new_tokens=250)
         assistant_reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
         assistant_reply = assistant_reply.split("<|assistant|>")[-1].strip()
-        chat = {"user": prompt,
-                "assistant": assistant_reply}
+        if "<|user|>" in assistant_reply:
+            assistant_reply = assistant_reply.split("<|user|>")[0].strip()
+        if not isinstance(assistant_reply, str):
+            assistant_reply = str(assistant_reply)
+        chat = {"user": prompt, "assistant": assistant_reply}
         message = [chat]
         return message
 
-    def put(self,chat_id):
+    def put(self, chat_id):
         data = request.get_json()
-        message = self.generate_code(data['prompt'], chat_id)
+        prompt = data.get('prompt', '').strip()
+        message = []
+        if prompt:
+            message = self.generate_code(prompt, chat_id)
         current_date = datetime.now().date()
-        result_json = {"chat_id": chat_id, "date": str(current_date), "title": data['prompt'], "messages": message}
+        result_json = {
+            "chat_id": chat_id,
+            "date": str(current_date),
+            "title": prompt if prompt else f"Chat {chat_id}",
+            "messages": message
+        }
         chat_table.insert(result_json)
-        return jsonify(chat_table.get(Chat.chat_id == chat_id))
+        return chat_table.get(Chat.chat_id == chat_id)
 
     def delete(self, chat_id):
         chat_table.remove(Chat.chat_id == chat_id)
-        return jsonify(chat_table.all())
+        return chat_table.all()
 
     def post(self, chat_id):
         data = request.get_json()
@@ -60,10 +73,11 @@ class ChatSource(Resource):
                 chat_table.update({"date": str(current_date)}, Chat.chat_id == chat_id)
                 updated_messages = current["messages"] + new_message
                 chat_table.update({"messages": updated_messages}, Chat.chat_id == chat_id)
-                return jsonify(chat_table.get(Chat.chat_id == chat_id))
+                return {"reply": new_message[-1]["assistant"]}
             else:
-                return jsonify({"error": f"Chat ID '{chat_id}' exists but no data found."}), 404
-
+                return {"error": f"Chat ID '{chat_id}' exists but no data found."}, 404
+        else:
+            return {"error": f"Chat ID '{chat_id}' not found."}, 404
 
 api.add_resource(ChatSource, "/chatsource/<int:chat_id>")
 
@@ -71,8 +85,8 @@ class ListAllChats(Resource):
     def get(self):
         all_chats = chat_table.all()
         if all_chats:
-            return jsonify(all_chats)
-        return jsonify({"error": "No chats found."}), 404
+            return all_chats
+        return {"error": "No chats found."}, 404
 
 api.add_resource(ListAllChats, "/list-all-chats")
 
@@ -80,8 +94,8 @@ class GetConversationHistory(Resource):
     def get(self, chat_id):
         conversation = chat_table.get(Chat.chat_id == chat_id)
         if conversation:
-            return jsonify(conversation["messages"])
-        return jsonify({"error": f"CHAT ID '{chat_id}' not found."}), 404
+            return conversation["messages"]
+        return {"error": f"CHAT ID '{chat_id}' not found."}, 404 
 
 api.add_resource(GetConversationHistory, '/conversation-history/<int:chat_id>')
 

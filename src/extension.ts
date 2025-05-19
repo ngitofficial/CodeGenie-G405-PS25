@@ -2,62 +2,52 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext){
+  let panel: vscode.WebviewPanel | undefined = undefined;
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-genie.openChat', () => {
-      const panel = vscode.window.createWebviewPanel(
-        'codeGenieChat', // Identifies the type of the webview. Used internally
-        'Code Genie Chat', // Title of the panel displayed to the user
-        vscode.ViewColumn.One, // Editor column to show the new webview panel in
-        {
-          enableScripts: true,
-          localResourceRoots: [
-            vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))
-          ]
-        }
-      );
+    vscode.commands.registerCommand('code-genie.openchat',() =>{
+      if(panel){
+        panel.reveal();
+      }
+      else{
+        panel = vscode.window.createWebviewPanel(
+          'codeGenieChat',
+          'Code Genie Chat',
+          vscode.ViewColumn.One,{
+            enableScripts: true,
+            localResourceRoots: [
+              vscode.Uri.file(path.join(context.extensionPath, 'webview'))
+            ]
+          }
+        );
+        
+        const htmlPath = path.join(context.extensionPath, 'webview', 'chat.html');
+        const scriptPath = vscode.Uri.file(path.join(context.extensionPath, 'webview', 'chat.js'));
+        const stylePath = vscode.Uri.file(path.join(context.extensionPath, 'webview', 'chat.css'));
 
-      panel.webview.html = getWebviewContent(context, panel.webview);
+        const scriptUri = panel.webview.asWebviewUri(scriptPath);
+        const styleUri = panel.webview.asWebviewUri(stylePath);
 
-      // Handle messages from the webview
-      panel.webview.onDidReceiveMessage(async message => {
-        switch (message.type) {
-          case 'sendPrompt':
-            try {
-              const response = await fetch('http://localhost:5000/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: message.prompt })
-              });
+        let html = fs.readFileSync(htmlPath, 'utf8');
 
-              if (!response.ok) {
-                throw new Error('fetch failed');
-              }
+        html = html.replace(`<script src="chat.js"></script>`, `<script src="${scriptUri}"></script>`);
+        html = html.replace(`<link rel="stylesheet" href="chat.css">`, `<link rel="stylesheet" href="${styleUri}">`);
 
-              const result = await response.json();
+        panel.webview.html = html;
+        
+        panel.webview.onDidReceiveMessage(message => {
+          if(message.type === 'userMessage'){
+            const userText = message.text;
+            const botReply = `You said: ${userText}`;
 
-              panel.webview.postMessage({
-                type: 'response',
-                text: result.reply
-              });
-            } catch (err) {
-              panel.webview.postMessage({
-                type: 'error',
-                text: 'fetch failed'
-              });
-            }
-            break;
-        }
-      });
+            panel?.webview.postMessage({type:'botResponse', text: botReply});
+          }
+        });
+
+        panel.onDidDispose(() =>{
+          panel = undefined;
+        });
+      }
     })
   );
-}
-
-function getWebviewContent(context: vscode.ExtensionContext, webview: vscode.Webview): string {
-  const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'chat.html');
-  let html = fs.readFileSync(htmlPath, 'utf8');
-  const mediaPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'));
-  const mediaUri = webview.asWebviewUri(mediaPath);
-  html = html.replace(/{{media}}/g, mediaUri.toString());
-  return html;
 }

@@ -1,0 +1,6 @@
+flask
+flask-restful
+flask-cors
+transformers
+torch
+tinydb

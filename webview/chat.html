@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+    <header>
+        <button id="toggle-sidebar-btn">☰</button>
+        <h1>   Welcome to Code Genie</h1>
+    </header>
+
+    <div id="chat-container">
+        <div id="sidebar" class="sidebar-hidden">
+            <h3>Chats</h3>
+            <ul id="chat-list"></ul>
+            <button id="new-chat-btn">+</button>
+        </div>
+
+        <div id="chat-main">
+            <div id="response-area" class="chat-scroll-area"></div>
+            <div id="input-area">
+                <input type="text" name="prompt" id="input-txt-box" placeholder="Type your message..." />
+                <button name="send" id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>
