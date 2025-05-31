@@ -17,9 +17,21 @@
     "commands": [
       {
         "command": "code-genie.openchat",
-        "title": "Code Genie Chat"
+        "title": "Code Genie Chat",
+        "icon":{
+          "light": "resources/codegenie.svg",
+          "dark": "resources/codegenie.svg"
+        }
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "code-genie.openchat",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

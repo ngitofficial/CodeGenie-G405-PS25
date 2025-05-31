@@ -13,14 +13,13 @@ export function activate(context: vscode.ExtensionContext){
         panel = vscode.window.createWebviewPanel(
           'codeGenieChat',
           'Code Genie Chat',
-          vscode.ViewColumn.One,{
+          vscode.ViewColumn.Two,{
             enableScripts: true,
             localResourceRoots: [
               vscode.Uri.file(path.join(context.extensionPath, 'webview'))
             ]
           }
         );
-        
         const htmlPath = path.join(context.extensionPath, 'webview', 'chat.html');
         const scriptPath = vscode.Uri.file(path.join(context.extensionPath, 'webview', 'chat.js'));
         const stylePath = vscode.Uri.file(path.join(context.extensionPath, 'webview', 'chat.css'));
@@ -35,18 +34,39 @@ export function activate(context: vscode.ExtensionContext){
 
         panel.webview.html = html;
         
-        panel.webview.onDidReceiveMessage(message => {
-          if(message.type === 'userMessage'){
+        panel.webview.onDidReceiveMessage(async message => {
+          if (message.type === 'selectFile') {
+            const files = await vscode.workspace.findFiles('**/*', '**/node_modules/**', 100);
+            const picks = files.map(uri => ({
+              label: uri.fsPath.split(/[\\/]/).pop()!,
+              description: uri.fsPath,
+              uri
+            }));
+            const picked = await vscode.window.showQuickPick(picks, {
+              placeHolder: 'Select a file to attach as context'
+            });
+            if (picked) {
+              const fileContent = (await vscode.workspace.openTextDocument(picked.uri)).getText();
+              panel.webview.postMessage({ type: 'fileContent', name: picked.label, content: fileContent });
+            }
+          }
+          else if(message.type === 'userMessage'){
             const userText = message.text;
             const botReply = `You said: ${userText}`;
 
             panel?.webview.postMessage({type:'botResponse', text: botReply});
           }
         });
-
         panel.onDidDispose(() =>{
           panel = undefined;
         });
+
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+          const fileName = path.basename(activeEditor.document.fileName);
+          const fileContent = activeEditor.document.getText();
+          panel.webview.postMessage({ type: 'fileContent', name: fileName, content: fileContent });
+        }
       }
     })
   );

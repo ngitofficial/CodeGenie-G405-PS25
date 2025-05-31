@@ -19,3 +19,15 @@ __pycache__/
 chat_history.json
 .DS_Store
 .env
+
+backend/*.gguf
+backend/*.bin
+backend/*.pth
+backend/*.pt
+backend/flask testing files/
+
+
+backend/chat_history.json
+
+*.pyc
+__pycache__/
