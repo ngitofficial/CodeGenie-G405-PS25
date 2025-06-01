@@ -6,11 +6,8 @@
   "engines": {
     "vscode": "^1.99.0"
   },
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [
-    "onCommand:code-genie.openchat"
+    "*"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -18,10 +15,14 @@
       {
         "command": "code-genie.openchat",
         "title": "Code Genie Chat",
-        "icon":{
+        "icon": {
           "light": "resources/codegenie.svg",
           "dark": "resources/codegenie.svg"
         }
+      },
+      {
+        "command": "code-genie.toggleInlineSuggestions",
+        "title": "Toggle Inline Suggestions"
       }
     ],
     "menus": {
@@ -31,7 +32,6 @@
           "group": "navigation"
         }
       ]
-    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -64,4 +64,5 @@
     "@types/node-fetch": "^2.6.12",
     "node-fetch": "^3.3.2"
   }
+}
 }

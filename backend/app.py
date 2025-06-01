@@ -12,7 +12,7 @@ api = Api(app)
 
 llm = Llama(
     model_path="deepseek-coder-1.3b-instruct.Q6_K.gguf",
-    n_ctx=2048,
+    n_ctx=512,
     n_threads=6,
     n_gpu_layers=20
 )
@@ -156,7 +156,25 @@ class GetConversationHistory(Resource):
 
 api.add_resource(GetConversationHistory, "/conversation-history/<int:chat_id>")
 
-
+@app.route('/autocomplete', methods=['POST'])
+def autocomplete():
+    data = request.get_json()
+    prompt = data.get('prompt', '')
+    line_prefix = data.get('linePrefix', '')
+    model_prompt = f"{prompt}\n{line_prefix}"
+    print("=== Autocomplete called ===")
+    print("Prompt sent to model:")
+    print(repr(model_prompt))
+    try:
+        output = llm(model_prompt, max_tokens=16) 
+        print("Raw model output:", output)
+        suggestion = output['choices'][0]['text'].strip()
+        suggestion = suggestion.split('\n')[0]
+        print("Suggestion returned:", suggestion)
+        return jsonify([suggestion])
+    except Exception as e:
+        print("Autocomplete error:", e)
+        return jsonify([]), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
